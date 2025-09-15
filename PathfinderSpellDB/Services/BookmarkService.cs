@@ -152,8 +152,40 @@ public class BookmarkService : IBookmarkService
 
     private string GetBookmarkListsFilePath()
     {
-        var dataPath = Path.Combine(_environment.WebRootPath, "..", "Data");
+        var dataPath = GetDataDirectory();
         Directory.CreateDirectory(dataPath);
         return Path.Combine(dataPath, "bookmarks.json");
+    }
+
+    private string GetDataDirectory()
+    {
+        // For tests, use a temporary directory
+        if (Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") == "true" || 
+            AppDomain.CurrentDomain.FriendlyName.Contains("testhost"))
+        {
+            var tempPath = Path.Combine(Path.GetTempPath(), "PathfinderSpellDB", "Data");
+            return tempPath;
+        }
+
+        // Try multiple possible locations for the Data directory
+        var possiblePaths = new[]
+        {
+            Path.Combine(_environment.WebRootPath, "..", "Data"),
+            Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data"),
+            Path.Combine(Directory.GetCurrentDirectory(), "Data"),
+            Path.Combine(Directory.GetCurrentDirectory(), "..", "Data"),
+            Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "Data")
+        };
+
+        foreach (var path in possiblePaths)
+        {
+            if (Directory.Exists(path) || Directory.Exists(Path.GetDirectoryName(path) ?? ""))
+            {
+                return path;
+            }
+        }
+
+        // If no directory found, return the first path
+        return possiblePaths[0];
     }
 }

@@ -82,7 +82,7 @@ public class SpellService : ISpellService
 
     private async Task LoadSpellsAsync()
     {
-        var filePath = Path.Combine(_environment.WebRootPath, "..", "Data", "spells.json");
+        var filePath = GetDataFilePath("spells.json");
         var json = await File.ReadAllTextAsync(filePath);
         _spells = JsonSerializer.Deserialize<List<Spell>>(json, new JsonSerializerOptions
         {
@@ -92,12 +92,36 @@ public class SpellService : ISpellService
 
     private async Task LoadSpellTypesAsync()
     {
-        var filePath = Path.Combine(_environment.WebRootPath, "..", "Data", "spellTypes.json");
+        var filePath = GetDataFilePath("spellTypes.json");
         var json = await File.ReadAllTextAsync(filePath);
         _spellTypes = JsonSerializer.Deserialize<List<SpellType>>(json, new JsonSerializerOptions
         {
             PropertyNameCaseInsensitive = true
         });
+    }
+
+    private string GetDataFilePath(string fileName)
+    {
+        // Try multiple possible locations for the Data directory
+        var possiblePaths = new[]
+        {
+            Path.Combine(_environment.WebRootPath, "..", "Data", fileName),
+            Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data", fileName),
+            Path.Combine(Directory.GetCurrentDirectory(), "Data", fileName),
+            Path.Combine(Directory.GetCurrentDirectory(), "..", "Data", fileName),
+            Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "Data", fileName)
+        };
+
+        foreach (var path in possiblePaths)
+        {
+            if (File.Exists(path))
+            {
+                return path;
+            }
+        }
+
+        // If no file found, return the first path and let it throw an exception
+        return possiblePaths[0];
     }
 
     private IEnumerable<Spell> ApplySpellTypeFilter(IEnumerable<Spell> spells, SpellType spellType, string spellOption)
