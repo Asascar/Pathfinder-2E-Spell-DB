@@ -1,0 +1,38 @@
+<div class="top-row ps-3 navbar navbar-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="">
+            <i class="fas fa-magic"></i> Spell DB
+        </a>
+    </div>
+</div>
+
+<input type="checkbox" title="Navigation menu" class="navbar-toggler" />
+
+<div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
+    <nav class="flex-column">
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                <i class="fas fa-home" aria-hidden="true"></i> Spells
+            </NavLink>
+        </div>
+
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="bookmarks">
+                <i class="fas fa-bookmark" aria-hidden="true"></i> Bookmarks
+            </NavLink>
+        </div>
+
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="quickref">
+                <i class="fas fa-book" aria-hidden="true"></i> Quick Reference
+            </NavLink>
+        </div>
+
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="about">
+                <i class="fas fa-info-circle" aria-hidden="true"></i> About
+            </NavLink>
+        </div>
+    </nav>
+</div>
+

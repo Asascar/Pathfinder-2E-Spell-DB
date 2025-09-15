@@ -1,0 +1,68 @@
+@using PathfinderSpellDB.Models
+
+<div class="spell-list">
+    @if (DisplayMode == "Details")
+    {
+        <div class="row">
+            @foreach (var spell in Spells)
+            {
+                <div class="col-12 mb-3">
+                    <SpellDetailComponent Spell="@spell" 
+                                         IsBookmarked="@false"
+                                         OnBookmarkToggle="OnSpellSelected" />
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="list-group">
+            @foreach (var spell in Spells)
+            {
+                <div class="list-group-item list-group-item-action @(spell == SelectedSpell ? "active" : "")"
+                     @onclick="() => OnSpellSelected.InvokeAsync(spell)"
+                     style="cursor: pointer;">
+                    <div class="d-flex w-100 justify-content-between">
+                        <h5 class="mb-1">@spell.Name</h5>
+                        <small class="text-muted">Level @(spell.Type == "Cantrip" ? "C" : spell.Level.ToString())</small>
+                    </div>
+                    <p class="mb-1">
+                        <span class="badge bg-primary me-1">@spell.Type</span>
+                        @if (spell.Action != null)
+                        {
+                            <span class="badge bg-secondary me-1">@spell.Action Action(s)</span>
+                        }
+                        @if (spell.Traditions.Any())
+                        {
+                            @foreach (var tradition in spell.Traditions.Take(2))
+                            {
+                                <span class="badge bg-info me-1">@tradition</span>
+                            }
+                        }
+                    </p>
+                    @if (!string.IsNullOrEmpty(spell.Description))
+                    {
+                        <p class="mb-0 text-muted small">
+                            @(spell.Description.Length > 200 ? spell.Description.Substring(0, 200) + "..." : spell.Description)
+                        </p>
+                    }
+                </div>
+            }
+        </div>
+    }
+    
+    @if (!Spells.Any())
+    {
+        <div class="alert alert-info text-center">
+            <h4>No spells found</h4>
+            <p>Try adjusting your search criteria to find spells.</p>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public List<Spell> Spells { get; set; } = new();
+    [Parameter] public Spell? SelectedSpell { get; set; }
+    [Parameter] public string DisplayMode { get; set; } = "Details";
+    [Parameter] public EventCallback<Spell> OnSpellSelected { get; set; }
+}

@@ -1,0 +1,186 @@
+@page "/bookmarks"
+@using PathfinderSpellDB.Models
+@using PathfinderSpellDB.Services
+@inject IBookmarkService BookmarkService
+@inject ISpellService SpellService
+@inject IJSRuntime JSRuntime
+
+<PageTitle>Bookmarks - Pathfinder 2E Spell Database</PageTitle>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="display-4 text-center mb-4">My Bookmarks</h1>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Bookmark Lists</h5>
+                    <button class="btn btn-primary btn-sm" @onclick="CreateNewList">
+                        <i class="fas fa-plus"></i> New List
+                    </button>
+                </div>
+                <div class="card-body">
+                    @if (bookmarkLists.Any())
+                    {
+                        <div class="list-group">
+                            @foreach (var list in bookmarkLists)
+                            {
+                                <div class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1">@list.Name</h6>
+                                        <small class="text-muted">
+                                            @list.Spells.Count spell(s)
+                                            @if (list.Vancian)
+                                            {
+                                                <span class="badge bg-info ms-1">Vancian</span>
+                                            }
+                                        </small>
+                                    </div>
+                                    <div>
+                                        <button class="btn btn-sm btn-outline-primary me-2" 
+                                                @onclick="() => SetActiveList(list.Id)">
+                                            @(list.Id == activeListId ? "Active" : "Set Active")
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger" 
+                                                @onclick="() => DeleteList(list.Id)">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-info text-center">
+                            <h4>No bookmark lists found</h4>
+                            <p>Create your first bookmark list to start organizing your spells.</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    @if (activeList != null && activeList.Spells.Any())
+    {
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">@activeList.Name</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            @foreach (var spellEntry in activeList.Spells)
+                            {
+                                <div class="col-md-6 col-lg-4 mb-3">
+                                    <div class="card h-100">
+                                        <div class="card-body">
+                                            <h6 class="card-title">@spellEntry.Key</h6>
+                                            <p class="card-text small text-muted">
+                                                @if (activeList.Vancian)
+                                                {
+                                                    <div class="vancian-controls">
+                                                        <small class="text-muted">Vancian Preparation:</small>
+                                                        <div class="btn-group btn-group-sm" role="group">
+                                                            <button class="btn btn-outline-secondary" 
+                                                                    @onclick="() => UpdateVancianPrep(spellEntry.Key, -1)">
+                                                                -
+                                                            </button>
+                                                            <span class="btn btn-outline-secondary disabled">
+                                                                @spellEntry.Value.VancianPrep
+                                                            </span>
+                                                            <button class="btn btn-outline-secondary" 
+                                                                    @onclick="() => UpdateVancianPrep(spellEntry.Key, 1)">
+                                                                +
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                }
+                                            </p>
+                                        </div>
+                                        <div class="card-footer">
+                                            <button class="btn btn-sm btn-outline-danger" 
+                                                    @onclick="() => RemoveSpell(spellEntry.Key)">
+                                                <i class="fas fa-trash"></i> Remove
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private List<BookmarkList> bookmarkLists = new();
+    private BookmarkList? activeList;
+    private string? activeListId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadBookmarkLists();
+    }
+
+    private async Task LoadBookmarkLists()
+    {
+        bookmarkLists = await BookmarkService.GetBookmarkListsAsync();
+        activeList = await BookmarkService.GetActiveBookmarkListAsync();
+        activeListId = activeList?.Id;
+    }
+
+    private async Task CreateNewList()
+    {
+        var listName = await JSRuntime.InvokeAsync<string>("prompt", new object[] { "Enter list name:" });
+        if (!string.IsNullOrEmpty(listName))
+        {
+            var vancian = await JSRuntime.InvokeAsync<bool>("confirm", new object[] { "Is this a Vancian preparation list?" });
+            await BookmarkService.CreateBookmarkListAsync(listName, vancian);
+            await LoadBookmarkLists();
+        }
+    }
+
+    private async Task SetActiveList(string listId)
+    {
+        await BookmarkService.SetActiveBookmarkListAsync(listId);
+        await LoadBookmarkLists();
+    }
+
+    private async Task DeleteList(string listId)
+    {
+        if (await JSRuntime.InvokeAsync<bool>("confirm", new object[] { "Are you sure you want to delete this list?" }))
+        {
+            await BookmarkService.DeleteBookmarkListAsync(listId);
+            await LoadBookmarkLists();
+        }
+    }
+
+    private async Task RemoveSpell(string spellName)
+    {
+        if (activeList != null)
+        {
+            await BookmarkService.RemoveSpellFromBookmarkListAsync(activeList.Id, spellName);
+            await LoadBookmarkLists();
+        }
+    }
+
+    private async Task UpdateVancianPrep(string spellName, int change)
+    {
+        if (activeList != null && activeList.Spells.ContainsKey(spellName))
+        {
+            var bookmarkSpell = activeList.Spells[spellName];
+            bookmarkSpell.VancianPrep = Math.Max(0, bookmarkSpell.VancianPrep + change);
+            await BookmarkService.UpdateBookmarkSpellAsync(activeList.Id, spellName, bookmarkSpell);
+            await LoadBookmarkLists();
+        }
+    }
+}

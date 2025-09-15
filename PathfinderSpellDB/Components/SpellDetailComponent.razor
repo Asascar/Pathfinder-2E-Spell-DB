@@ -1,0 +1,132 @@
+@using PathfinderSpellDB.Models
+
+<div class="card spell-detail">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h4 class="mb-0">@Spell.Name</h4>
+        <div>
+            <span class="badge bg-primary me-1">@Spell.Type</span>
+            <span class="badge bg-secondary">Level @(Spell.Type == "Cantrip" ? "C" : Spell.Level.ToString())</span>
+        </div>
+    </div>
+    
+    <div class="card-body">
+        <div class="row mb-3">
+            <div class="col-md-6">
+                @if (Spell.Traditions.Any())
+                {
+                    <p><strong>Traditions:</strong> @string.Join(", ", Spell.Traditions)</p>
+                }
+                
+                @if (!string.IsNullOrEmpty(Spell.Cast))
+                {
+                    <p><strong>Cast:</strong> @Spell.Cast</p>
+                }
+                
+                @if (!string.IsNullOrEmpty(Spell.Action))
+                {
+                    <p><strong>Action:</strong> @Spell.Action</p>
+                }
+            </div>
+            
+            <div class="col-md-6">
+                @if (!string.IsNullOrEmpty(Spell.Range))
+                {
+                    <p><strong>Range:</strong> @Spell.Range</p>
+                }
+                
+                @if (!string.IsNullOrEmpty(Spell.Area))
+                {
+                    <p><strong>Area:</strong> @Spell.Area</p>
+                }
+                
+                @if (!string.IsNullOrEmpty(Spell.Targets))
+                {
+                    <p><strong>Targets:</strong> @Spell.Targets</p>
+                }
+                
+                @if (!string.IsNullOrEmpty(Spell.Duration))
+                {
+                    <p><strong>Duration:</strong> @Spell.Duration</p>
+                }
+            </div>
+        </div>
+        
+        @if (Spell.Traits.Any())
+        {
+            <div class="mb-3">
+                <strong>Traits:</strong>
+                @foreach (var trait in Spell.Traits)
+                {
+                    <span class="badge bg-info me-1">@trait</span>
+                }
+            </div>
+        }
+        
+        @if (!string.IsNullOrEmpty(Spell.SavingThrow))
+        {
+            <div class="mb-3">
+                <strong>Saving Throw:</strong> @Spell.SavingThrow
+            </div>
+        }
+        
+        @if (!string.IsNullOrEmpty(Spell.Description))
+        {
+            <div class="mb-3">
+                <strong>Description:</strong>
+                <div class="spell-description">
+                    @((MarkupString)FormatDescription(Spell.Description))
+                </div>
+            </div>
+        }
+        
+        @if (!string.IsNullOrEmpty(Spell.Heightened))
+        {
+            <div class="mb-3">
+                <strong>Heightened:</strong>
+                <div class="spell-heightened">
+                    @((MarkupString)FormatDescription(Spell.Heightened))
+                </div>
+            </div>
+        }
+        
+        @if (!string.IsNullOrEmpty(Spell.Source))
+        {
+            <div class="mb-3">
+                <strong>Source:</strong> @Spell.Source
+            </div>
+        }
+        
+        @if (!string.IsNullOrEmpty(Spell.NethysUrl))
+        {
+            <div class="mb-3">
+                <a href="@Spell.NethysUrl" target="_blank" class="btn btn-outline-primary">
+                    <i class="fas fa-external-link-alt"></i> View on Archives of Nethys
+                </a>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter] public Spell Spell { get; set; } = new();
+    [Parameter] public bool IsBookmarked { get; set; }
+    [Parameter] public EventCallback<Spell> OnBookmarkToggle { get; set; }
+
+    private string FormatDescription(string description)
+    {
+        if (string.IsNullOrEmpty(description))
+            return string.Empty;
+            
+        var formatted = description
+            .Replace("**", "<strong>")
+            .Replace("\n", "<br/>");
+            
+        var parts = formatted.Split("<strong>");
+        for (int i = 1; i < parts.Length; i += 2)
+        {
+            parts[i] = "<strong>" + parts[i] + "</strong>";
+        }
+        
+        return string.Join("", parts);
+    }
+}
