@@ -1,0 +1,185 @@
+@page "/quickref"
+@using PathfinderSpellDB.Models
+@using PathfinderSpellDB.Services
+@inject ISpellService SpellService
+
+<PageTitle>Quick Reference - Pathfinder 2E Spell Database</PageTitle>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="display-4 text-center mb-4">Quick Reference</h1>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Spell Level Reference</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Cantrips (Level 0)</h6>
+                            <p class="text-muted">Basic magical abilities that don't consume spell slots</p>
+                            
+                            <h6>1st Level Spells</h6>
+                            <p class="text-muted">Basic spells for beginning spellcasters</p>
+                            
+                            <h6>2nd Level Spells</h6>
+                            <p class="text-muted">More powerful spells with greater effects</p>
+                            
+                            <h6>3rd Level Spells</h6>
+                            <p class="text-muted">Intermediate spells with significant power</p>
+                            
+                            <h6>4th Level Spells</h6>
+                            <p class="text-muted">Advanced spells for experienced casters</p>
+                            
+                            <h6>5th Level Spells</h6>
+                            <p class="text-muted">High-level spells with major effects</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>6th Level Spells</h6>
+                            <p class="text-muted">Very powerful spells for master casters</p>
+                            
+                            <h6>7th Level Spells</h6>
+                            <p class="text-muted">Exceptional spells with dramatic effects</p>
+                            
+                            <h6>8th Level Spells</h6>
+                            <p class="text-muted">Legendary spells of great power</p>
+                            
+                            <h6>9th Level Spells</h6>
+                            <p class="text-muted">The most powerful spells available</p>
+                            
+                            <h6>10th Level Spells</h6>
+                            <p class="text-muted">Mythic spells of ultimate power</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Traditions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-6">
+                            <h6><span class="badge bg-primary me-2">A</span>Arcane</h6>
+                            <p class="small text-muted">Wizard, Sorcerer, Bard</p>
+                            
+                            <h6><span class="badge bg-success me-2">D</span>Divine</h6>
+                            <p class="small text-muted">Cleric, Champion, Oracle</p>
+                        </div>
+                        <div class="col-6">
+                            <h6><span class="badge bg-info me-2">O</span>Occult</h6>
+                            <p class="small text-muted">Bard, Psychic, Witch</p>
+                            
+                            <h6><span class="badge bg-warning me-2">P</span>Primal</h6>
+                            <p class="small text-muted">Druid, Ranger, Barbarian</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Spell Types</h5>
+                </div>
+                <div class="card-body">
+                    <h6><span class="badge bg-secondary me-2">S</span>Spell</h6>
+                    <p class="small text-muted">Traditional spells that consume spell slots</p>
+                    
+                    <h6><span class="badge bg-dark me-2">F</span>Focus</h6>
+                    <p class="small text-muted">Focus spells that use focus points</p>
+                    
+                    <h6><span class="badge bg-light text-dark me-2">C</span>Cantrip</h6>
+                    <p class="small text-muted">Basic magical abilities, no spell slots required</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Action Types</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <h6><span class="badge bg-success me-2">F</span>Free Action</h6>
+                            <p class="small text-muted">No action cost</p>
+                        </div>
+                        <div class="col-md-3">
+                            <h6><span class="badge bg-warning me-2">R</span>Reaction</h6>
+                            <p class="small text-muted">Triggered response</p>
+                        </div>
+                        <div class="col-md-3">
+                            <h6><span class="badge bg-primary me-2">1</span>1 Action</h6>
+                            <p class="small text-muted">Single action</p>
+                        </div>
+                        <div class="col-md-3">
+                            <h6><span class="badge bg-info me-2">2+</span>2+ Actions</h6>
+                            <p class="small text-muted">Multiple actions</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Spell Statistics</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-3">
+                            <h4 class="text-primary">@totalSpells</h4>
+                            <p class="text-muted">Total Spells</p>
+                        </div>
+                        <div class="col-md-3">
+                            <h4 class="text-success">@cantripCount</h4>
+                            <p class="text-muted">Cantrips</p>
+                        </div>
+                        <div class="col-md-3">
+                            <h4 class="text-info">@focusCount</h4>
+                            <p class="text-muted">Focus Powers</p>
+                        </div>
+                        <div class="col-md-3">
+                            <h4 class="text-warning">@spellCount</h4>
+                            <p class="text-muted">Regular Spells</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private int totalSpells = 0;
+    private int cantripCount = 0;
+    private int focusCount = 0;
+    private int spellCount = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var spells = await SpellService.GetAllSpellsAsync();
+        totalSpells = spells.Count;
+        cantripCount = spells.Count(s => s.Type == "Cantrip");
+        focusCount = spells.Count(s => s.Type == "Focus");
+        spellCount = spells.Count(s => s.Type == "Spell");
+    }
+}

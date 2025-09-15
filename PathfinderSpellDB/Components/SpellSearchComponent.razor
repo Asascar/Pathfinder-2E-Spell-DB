@@ -1,0 +1,165 @@
+@using PathfinderSpellDB.Models
+@using PathfinderSpellDB.Services
+@inject ISpellService SpellService
+
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">Search Spells</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <label for="spellName" class="form-label">Spell Name</label>
+                <input type="text" class="form-control" id="spellName" 
+                       @bind="criteria.SpellName" 
+                       @oninput="OnCriteriaChanged" 
+                       placeholder="Enter spell name..." />
+            </div>
+            
+            <div class="col-md-4 mb-3">
+                <label for="spellType" class="form-label">Filter By</label>
+                <select class="form-select" id="spellType" 
+                        @bind="criteria.SpellType" 
+                        @bind:after="OnCriteriaChanged">
+                    <option value="">All Spells</option>
+                    @foreach (var type in spellTypes)
+                    {
+                        <option value="@type.Name">@type.Name</option>
+                    }
+                </select>
+            </div>
+            
+            <div class="col-md-4 mb-3">
+                <label for="spellOption" class="form-label">Option</label>
+                <select class="form-select" id="spellOption" 
+                        @bind="criteria.SpellOption" 
+                        @bind:after="OnCriteriaChanged"
+                        disabled="@(string.IsNullOrEmpty(criteria.SpellType))">
+                    <option value="">All</option>
+                    @if (selectedSpellType?.Options != null)
+                    {
+                        @foreach (var option in selectedSpellType.Options)
+                        {
+                            <option value="@option.Value">@option.Name</option>
+                        }
+                    }
+                </select>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-3 mb-3">
+                <label for="sortBy" class="form-label">Sort By</label>
+                <select class="form-select" id="sortBy" 
+                        @bind="criteria.SortBy" 
+                        @bind:after="OnCriteriaChanged">
+                    <option value="Level">Level</option>
+                    <option value="Name">Name</option>
+                    <option value="Actions">Actions</option>
+                </select>
+            </div>
+            
+            <div class="col-md-3 mb-3">
+                <label for="displayMode" class="form-label">Display Mode</label>
+                <select class="form-select" id="displayMode" 
+                        @bind="criteria.DisplayMode" 
+                        @bind:after="OnCriteriaChanged">
+                    <option value="Details">Details</option>
+                    <option value="List">List</option>
+                </select>
+            </div>
+            
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Levels</label>
+                <div class="row">
+                    <div class="col-6">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="levelC" 
+                                   @bind="levelC" @bind:after="OnLevelChanged" />
+                            <label class="form-check-label" for="levelC">Cantrip</label>
+                        </div>
+                        @for (int i = 1; i <= 5; i++)
+                        {
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="level@i" 
+                                       @bind="levelChecks[i-1]" @bind:after="OnLevelChanged" />
+                                <label class="form-check-label" for="level@i">Level @i</label>
+                            </div>
+                        }
+                    </div>
+                    <div class="col-6">
+                        @for (int i = 6; i <= 10; i++)
+                        {
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="level@i" 
+                                       @bind="levelChecks[i-1]" @bind:after="OnLevelChanged" />
+                                <label class="form-check-label" for="level@i">Level @i</label>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-12">
+                <button type="button" class="btn btn-secondary" @onclick="ResetCriteria">
+                    Reset Filters
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public EventCallback<SearchCriteria> OnSearch { get; set; }
+    
+    private SearchCriteria criteria = new();
+    private List<SpellType> spellTypes = new();
+    private SpellType? selectedSpellType;
+    private bool levelC = false;
+    private bool[] levelChecks = new bool[10];
+
+    protected override async Task OnInitializedAsync()
+    {
+        spellTypes = await SpellService.GetSpellTypesAsync();
+        await TriggerSearch();
+    }
+
+    private async Task OnCriteriaChanged()
+    {
+        selectedSpellType = spellTypes.FirstOrDefault(st => st.Name == criteria.SpellType);
+        if (selectedSpellType == null)
+        {
+            criteria.SpellOption = string.Empty;
+        }
+        
+        await TriggerSearch();
+    }
+
+    private async Task OnLevelChanged()
+    {
+        criteria.Levels.Clear();
+        if (levelC) criteria.Levels.Add("C");
+        for (int i = 0; i < levelChecks.Length; i++)
+        {
+            if (levelChecks[i]) criteria.Levels.Add((i + 1).ToString());
+        }
+        
+        await TriggerSearch();
+    }
+
+    private async Task ResetCriteria()
+    {
+        criteria = new SearchCriteria();
+        levelC = false;
+        levelChecks = new bool[10];
+        selectedSpellType = null;
+        await TriggerSearch();
+    }
+
+    private async Task TriggerSearch()
+    {
+        await OnSearch.InvokeAsync(criteria);
+    }
+}

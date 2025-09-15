@@ -1,0 +1,117 @@
+@page "/"
+@using PathfinderSpellDB.Models
+@using PathfinderSpellDB.Services
+@inject ISpellService SpellService
+@inject IBookmarkService BookmarkService
+@inject IJSRuntime JSRuntime
+
+<PageTitle>Pathfinder 2E Spell Database</PageTitle>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="display-4 text-center mb-4">Pathfinder 2E Spell Database</h1>
+            <p class="lead text-center mb-5">Search and discover spells and powers across different classes</p>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-12">
+            <SpellSearchComponent OnSearch="HandleSearch" />
+        </div>
+    </div>
+    
+    <div class="row mt-4">
+        <div class="col-12">
+            <SpellListComponent Spells="@filteredSpells" 
+                               OnSpellSelected="HandleSpellSelected" 
+                               SelectedSpell="@selectedSpell"
+                               DisplayMode="@displayMode" />
+        </div>
+    </div>
+    
+    @if (selectedSpell != null && displayMode == "List")
+    {
+        <div class="row mt-4">
+            <div class="col-12">
+                <SpellDetailComponent Spell="@selectedSpell" 
+                                     IsBookmarked="@isBookmarked"
+                                     OnBookmarkToggle="HandleBookmarkToggle" />
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private List<Spell> allSpells = new();
+    private List<Spell> filteredSpells = new();
+    private Spell? selectedSpell;
+    private SearchCriteria searchCriteria = new();
+    private string displayMode = "Details";
+    private bool isBookmarked = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        allSpells = await SpellService.GetAllSpellsAsync();
+        filteredSpells = allSpells.Take(20).ToList();
+        
+        if (filteredSpells.Any())
+        {
+            selectedSpell = filteredSpells.First();
+            await UpdateBookmarkStatus();
+        }
+    }
+
+    private async Task HandleSearch(SearchCriteria criteria)
+    {
+        searchCriteria = criteria;
+        displayMode = criteria.DisplayMode;
+        
+        filteredSpells = await SpellService.SearchSpellsAsync(criteria);
+        
+        if (filteredSpells.Any())
+        {
+            selectedSpell = filteredSpells.First();
+            await UpdateBookmarkStatus();
+        }
+        else
+        {
+            selectedSpell = null;
+        }
+        
+        StateHasChanged();
+    }
+
+    private async Task HandleSpellSelected(Spell spell)
+    {
+        selectedSpell = spell;
+        await UpdateBookmarkStatus();
+        StateHasChanged();
+    }
+
+    private async Task HandleBookmarkToggle(Spell spell)
+    {
+        var activeList = await BookmarkService.GetActiveBookmarkListAsync();
+        if (activeList != null)
+        {
+            if (isBookmarked)
+            {
+                await BookmarkService.RemoveSpellFromBookmarkListAsync(activeList.Id, spell.Name);
+            }
+            else
+            {
+                await BookmarkService.AddSpellToBookmarkListAsync(activeList.Id, spell.Name);
+            }
+            await UpdateBookmarkStatus();
+            StateHasChanged();
+        }
+    }
+
+    private async Task UpdateBookmarkStatus()
+    {
+        if (selectedSpell != null)
+        {
+            isBookmarked = await BookmarkService.IsSpellBookmarkedAsync(selectedSpell.Name);
+        }
+    }
+}

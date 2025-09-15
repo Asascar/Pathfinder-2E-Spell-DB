@@ -1,0 +1,113 @@
+@page "/about"
+@using PathfinderSpellDB.Models
+@using PathfinderSpellDB.Services
+@inject ISpellService SpellService
+
+<PageTitle>About - Pathfinder 2E Spell Database</PageTitle>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="display-4 text-center mb-4">About Pathfinder 2E Spell Database</h1>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Welcome to the Pathfinder 2E Spell Database</h5>
+                    <p class="card-text">
+                        This application allows you to search and find spells and powers across different classes quickly and easily. 
+                        It's a .NET Core Blazor adaptation of the original JavaScript/React application.
+                    </p>
+                    
+                    <h6>Features:</h6>
+                    <ul>
+                        <li><strong>Comprehensive Spell Database:</strong> Search through hundreds of spells from Pathfinder 2E</li>
+                        <li><strong>Advanced Filtering:</strong> Filter by traditions, types, levels, traits, and more</li>
+                        <li><strong>Bookmark System:</strong> Save your favorite spells in custom lists</li>
+                        <li><strong>Vancian Preparation:</strong> Track spell preparation for Vancian casters</li>
+                        <li><strong>Dark/Light Theme:</strong> Choose your preferred viewing mode</li>
+                        <li><strong>Responsive Design:</strong> Works great on desktop and mobile devices</li>
+                        <li><strong>Offline Capable:</strong> All data is loaded locally for fast access</li>
+                    </ul>
+                    
+                    <h6>Data Source:</h6>
+                    <p class="card-text">
+                        All spell data is sourced from the <a href="https://2e.aonprd.com/" target="_blank">Archives of Nethys</a>, 
+                        the official Pathfinder 2E reference website. This application is not affiliated with Paizo Inc.
+                    </p>
+                    
+                    <h6>Technology Stack:</h6>
+                    <ul>
+                        <li><strong>Backend:</strong> .NET 8 with Blazor Server</li>
+                        <li><strong>Frontend:</strong> Blazor Components with Bootstrap 5</li>
+                        <li><strong>Icons:</strong> Font Awesome 6</li>
+                        <li><strong>Data:</strong> JSON files with spell information</li>
+                    </ul>
+                    
+                    <h6>Legal Notice:</h6>
+                    <div class="alert alert-warning">
+                        <strong>Community Use Policy:</strong> This website and application uses trademarks and/or copyrights 
+                        owned by Paizo Inc., which are used under Paizo's Community Use Policy. We are expressly prohibited 
+                        from charging you to use or access this content. This website and application is not published, 
+                        endorsed, or specifically approved by Paizo Inc. For more information about Paizo's Community Use Policy, 
+                        please visit <a href="https://paizo.com/communityuse" target="_blank">paizo.com/communityuse</a>.
+                    </div>
+                    
+                    <h6>Statistics:</h6>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="card text-center">
+                                <div class="card-body">
+                                    <h5 class="card-title text-primary">@totalSpells</h5>
+                                    <p class="card-text">Total Spells</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card text-center">
+                                <div class="card-body">
+                                    <h5 class="card-title text-success">@cantripCount</h5>
+                                    <p class="card-text">Cantrips</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card text-center">
+                                <div class="card-body">
+                                    <h5 class="card-title text-info">@focusCount</h5>
+                                    <p class="card-text">Focus Powers</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4 text-center">
+                        <a href="https://2e.aonprd.com/" target="_blank" class="btn btn-primary me-2">
+                            <i class="fas fa-external-link-alt"></i> Visit Archives of Nethys
+                        </a>
+                        <a href="https://paizo.com/" target="_blank" class="btn btn-outline-primary">
+                            <i class="fas fa-globe"></i> Visit Paizo
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private int totalSpells = 0;
+    private int cantripCount = 0;
+    private int focusCount = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var spells = await SpellService.GetAllSpellsAsync();
+        totalSpells = spells.Count;
+        cantripCount = spells.Count(s => s.Type == "Cantrip");
+        focusCount = spells.Count(s => s.Type == "Focus");
+    }
+}

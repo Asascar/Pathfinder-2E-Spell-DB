@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  pathfinder-spell-db:
+    build: .
+    ports:
+      - "8080:80"
+      - "8443:443"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:80
+    volumes:
+      - ./Data:/app/Data
+    restart: unless-stopped
